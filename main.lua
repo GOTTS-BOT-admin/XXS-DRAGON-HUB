@@ -1,13 +1,13 @@
 -- [[ XXS-DRAGON-HUB v2.0 / MULTILINGUAL & TP UPDATE ]]
 local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
 
--- 🔑 ユーザー設定 (ここを自分のリンクに変える)
-local WorkInkURL = "https://work.ink/xxxxxx/xxxxxx"
+-- 🔑 ユーザー設定 (リンクとキーを最新版に設定済み)
+local WorkInkURL = "https://work.ink/2xWq/xxs-dragon-hub2026no1-key"
 local LatestKey = "KEY-SHZ7-Ajd1-18Aw-amQv"
 
 -- [[ 🌐 言語データ定義 ]]
 local lang = {
-    curr = "en", -- 起動時のデフォルト (jp に変えると最初から日本語)
+    curr = "en", -- デフォルト設定 (日本語にしたい場合は "jp" に変更)
     data = {
         en = {
             m_title = "🐉 XXS-DRAGON-HUB v2.0",
@@ -64,7 +64,6 @@ SettingsTab:CreateButton({
    Callback = function()
        if lang.curr == "en" then lang.curr = "jp" else lang.curr = "en" end
        Rayfield:Notify({Title = "System", Content = lang.data[lang.curr].n_changed, Duration = 3})
-       -- 注意: Rayfieldの仕様上、タブ名の即時書き換えは再ロードが必要です
    end,
 })
 
@@ -85,7 +84,7 @@ SettingsTab:CreateToggle({
    CurrentValue = false,
    Callback = function(Value)
       _G.TPEnabled = Value
-      if uis.TouchEnabled then -- スマホ判定
+      if uis.TouchEnabled then -- スマホ用TPボタンの表示制御
           if Value then
               if not _G.TPButton then
                   _G.TPButton = Instance.new("ScreenGui", game.CoreGui)
@@ -106,7 +105,7 @@ SettingsTab:CreateToggle({
    end,
 })
 
--- PC用 Cキー
+-- PC用 Cキー検知
 uis.InputBegan:Connect(function(input, gpe)
     if not gpe and input.KeyCode == Enum.KeyCode.C then doTeleport() end
 end)
