@@ -15,7 +15,7 @@ local Window = Fluent:CreateWindow({
     MinimizeKey = Enum.KeyCode.LeftControl
 })
 
--- スマホ用 OPEN ボタン (右上の「ー」で閉じた時用)
+-- スマホ用 OPEN ボタン (最小化からの復帰用)
 local ScreenGui = Instance.new("ScreenGui", game.CoreGui)
 local OpenBtn = Instance.new("TextButton", ScreenGui)
 OpenBtn.Name = "DragonHubOpen"
@@ -24,17 +24,17 @@ OpenBtn.Position = UDim2.new(0, 10, 0.5, 0)
 OpenBtn.Text = "OPEN HUB"
 OpenBtn.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
 OpenBtn.TextColor3 = Color3.new(1, 1, 1)
-OpenBtn.Visible = false -- 認証前は隠す
+OpenBtn.Visible = false
 OpenBtn.MouseButton1Click:Connect(function()
     Window:Minimize()
 end)
 
--- 初期状態のKeyタブ
+-- 🗝️ Keyタブ (認証後にDestroyされる)
 local KeyTab = Window:AddTab({ Title = "Key / 認証", Icon = "key" })
 
 KeyTab:AddParagraph({
     Title = "Verification / 認証",
-    Content = "Get the key from the link.\n認証に成功すると、このタブは消去されます。"
+    Content = "Enter the key below.\n認証が成功すると、このタブは自動的に消去されます。"
 })
 
 KeyTab:AddButton({
@@ -45,24 +45,28 @@ KeyTab:AddButton({
     end
 })
 
-local KeyInput = ""
-KeyTab:AddInput("Input", {
+local KeyBox = KeyTab:AddInput("Input", {
     Title = "Enter Key",
-    Callback = function(v) KeyInput = v end
+    Default = "",
+    Placeholder = "Paste here...",
+    Callback = function(v) end
 })
 
 local Loaded = false
 KeyTab:AddButton({
     Title = "🔓 Unlock / 起動",
     Callback = function()
-        if KeyInput == LatestKey and not Loaded then
+        -- ボタン押下時に入力値を直接取得し、前後の空白を除去
+        local input = string.gsub(KeyBox.Value, "^%s*(.-)%s*$", "%1")
+        
+        if input == LatestKey and not Loaded then
             Loaded = true
-            Fluent:Notify({ Title = "Success", Content = "Unlocking Features...", Duration = 3 })
+            Fluent:Notify({ Title = "Success", Content = "Key Verified! Loading Features...", Duration = 3 })
             KeyTab:Destroy() -- Keyタブを消去
-            OpenBtn.Visible = true -- スマホボタン表示
+            OpenBtn.Visible = true -- スマホボタンを表示
             StartMainFeatures()
         else
-            Fluent:Notify({ Title = "Error", Content = "Invalid Key", Duration = 5 })
+            Fluent:Notify({ Title = "Error", Content = "Key is Incorrect. Check for spaces.", Duration = 5 })
         end
     end
 })
@@ -83,7 +87,7 @@ function StartMainFeatures()
 
     -- [[ PLAYER TAB ]]
     Tabs.Player:AddSlider("SpdSl", { Title = "WalkSpeed", Default = 16, Min = 16, Max = 150, Rounding = 1, Callback = function(v) WalkSpeed = v end })
-    local TpToggle = Tabs.Player:AddToggle("Tp", {Title = "Third Person / 三人称化", Default = false }) -- 追加機能
+    local TpToggle = Tabs.Player:AddToggle("Tp", {Title = "Third Person / 三人称化", Default = false })
     local FlyToggle = Tabs.Player:AddToggle("Fly", {Title = "Fly / 飛行", Default = false })
     local NcToggle = Tabs.Player:AddToggle("Nc", {Title = "Noclip / 壁抜け", Default = false })
 
@@ -92,7 +96,7 @@ function StartMainFeatures()
     local BAToggle = Tabs.Aura:AddToggle("BA", {Title = "Bring Aura", Default = false })
 
     -- [[ 😏 SUS TAB ]]
-    local BangToggle = Tabs.Sus:AddToggle("Bang", {Title = "BANG / 背後追尾", Default = false })
+    local BangToggle = Tabs.Sus:AddToggle("Bang", {Title = "BANG / 背後追従", Default = false })
     local Dropdown = Tabs.Sus:AddDropdown("Plr", { Title = "Target / 対象", Values = {}, Callback = function(v) Target = v end })
     local function Upd()
         local t = {}
@@ -105,7 +109,6 @@ function StartMainFeatures()
 
     -- [[ LOCAL TAB ]]
     local EspToggle = Tabs.Local:AddToggle("Esp", {Title = "Player ESP", Default = false })
-    Tabs.Local:AddParagraph({Title = "BAN Hammer", Content = "P-Key or Button below / Pキーまたはボタン"})
     Tabs.Local:AddButton({
         Title = "💥 EXECUTE BAN / BAN実行",
         Callback = function() ExecuteBanHammer() end
@@ -120,7 +123,7 @@ function StartMainFeatures()
         for _, v in pairs(game.Players:GetPlayers()) do
             if v ~= lp and v.Character and v.Character:FindFirstChild("HumanoidRootPart") then
                 if (root.Position - v.Character.HumanoidRootPart.Position).Magnitude < 20 then
-                    for _, p in pairs(v.Character:GetChildren()) do if p:IsA("BasePart") then p.Color = Color3.new(1,0,0); p.Material = "Neon"; task.delay(1, function() pcall(function() p.Material = "Plastic" end) end) end end
+                    for _, p in pairs(v.Character:GetChildren()) do if p:IsA("BasePart") then p.Color = Color3.new(1,0,0); p.Material = "Neon"; task.delay(1, function() pcall(function() p.Color = Color3.new(1,1,1) p.Material = "Plastic" end) end) end end
                     local g = Instance.new("BillboardGui", v.Character.Head); g.Size = UDim2.new(0,250,0,70); g.AlwaysOnTop = true; g.ExtentsOffset = Vector3.new(0,4,0)
                     local t = Instance.new("TextLabel", g); t.Size = UDim2.new(1,0,1,0); t.BackgroundTransparency = 1; t.Text = "BANNED!!!"; t.TextColor3 = Color3.new(1,0,0); t.Font = "GothamBlack"; t.TextSize = 60; t.TextStrokeTransparency = 0
                     game.Debris:AddItem(g, 1.5)
@@ -137,12 +140,11 @@ function StartMainFeatures()
         
         char.Humanoid.WalkSpeed = WalkSpeed
         
-        -- 三人称化機能のロジック
+        -- 三人称化
         if TpToggle.Value then
             lp.CameraMinZoomDistance = 5
             lp.CameraMaxZoomDistance = 100
         else
-            -- オフの時はゲームデフォルトに任せる（通常は0.5）
             lp.CameraMinZoomDistance = 0.5
         end
 
@@ -153,10 +155,8 @@ function StartMainFeatures()
         if BangToggle.Value and Target ~= "" then
             local p = game.Players:FindFirstChild(Target)
             if p and p.Character and p.Character:FindFirstChild("HumanoidRootPart") then
-                -- 相手の背後1.2スタッド、高さは同じ
                 local backPos = p.Character.HumanoidRootPart.CFrame * CFrame.new(0, 0, 1.2)
                 char.HumanoidRootPart.CFrame = backPos
-                -- 腰振りアニメーション
                 char.HumanoidRootPart.CFrame *= CFrame.new(0, 0, math.sin(tick() * bS * 2) * 0.8)
             end
         end
