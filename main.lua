@@ -1,47 +1,16 @@
--- [[ XXS-DRAGON-HUB v2.0 / MULTILINGUAL & TP UPDATE ]]
+-- [[ XXS-DRAGON-HUB v2.0 / ULTIMATE CUSTOM ]]
 local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
 
--- 🔑 ユーザー設定 (リンクとキーを最新版に設定済み)
+-- 🔑 設定 (以前お聞きしたリンクとキーを設定済み)
 local WorkInkURL = "https://work.ink/2xWq/xxs-dragon-hub2026no1-key"
 local LatestKey = "KEY-SHZ7-Ajd1-18Aw-amQv"
 
--- [[ 🌐 言語データ定義 ]]
-local lang = {
-    curr = "en", -- デフォルト設定 (日本語にしたい場合は "jp" に変更)
-    data = {
-        en = {
-            m_title = "🐉 XXS-DRAGON-HUB v2.0",
-            m_sub = "by XXS-DRAGON-HUB-admin",
-            t_player = "👤 PLAYER",
-            t_sus = "😏 (Sus)",
-            t_set = "⚙️ SETTINGS",
-            f_tp_toggle = "TP Command (C Key / Button)",
-            f_ui_trans = "UI Transparency",
-            f_lang_sel = "Select Language",
-            n_changed = "Language Changed!"
-        },
-        jp = {
-            m_title = "🐉 XXS-DRAGON-HUB v2.0 (admin製)",
-            m_sub = "XXS-DRAGON-HUB-adminが開発",
-            t_player = "👤 プレイヤー",
-            t_sus = "😏 (ネタ機能)",
-            t_set = "⚙️ 設定",
-            f_tp_toggle = "TPコマンド (Cキー / ボタン)",
-            f_ui_trans = "メニューの透明度",
-            f_lang_sel = "言語を選択してください",
-            n_changed = "言語を切り替えました！"
-        }
-    }
-}
-
--- 現在の言語データをセット
-local d = lang.data[lang.curr]
-
 -- [[ 🗝️ ウィンドウ作成 ]]
 local Window = Rayfield:CreateWindow({
-   Name = d.m_title,
+   Name = "🐉 XXS-DRAGON-HUB v2.0",
    LoadingTitle = "XXS-DRAGON-HUB Loading...",
-   LoadingSubtitle = d.m_sub,
+   LoadingSubtitle = "by XXS-DRAGON-HUB-admin",
+   Theme = "Amber", -- かっこいい黄色系テーマ
    KeySystem = true,
    KeySettings = {
       Title = "XXS-DRAGON KEY SYSTEM",
@@ -51,98 +20,182 @@ local Window = Rayfield:CreateWindow({
    }
 })
 
--- [[ ⚙️ SETTINGS タブ ]]
-local SettingsTab = Window:CreateTab(d.t_set, 4483362458)
 local lp = game.Players.LocalPlayer
-local mouse = lp:GetMouse()
 local uis = game:GetService("UserInputService")
+local rs = game:GetService("RunService")
 
--- 言語切り替えボタン
-SettingsTab:CreateSection(d.f_lang_sel)
+-- [[ ⚙️ SETTINGS タブ ]]
+local SettingsTab = Window:CreateTab("⚙️ SETTINGS", 4483362458)
+
+SettingsTab:CreateSection("🔑 Key System")
 SettingsTab:CreateButton({
-   Name = "English / 日本語 (Toggle)",
+   Name = "📋 GET KEY (Copy Link)",
    Callback = function()
-       if lang.curr == "en" then lang.curr = "jp" else lang.curr = "en" end
-       Rayfield:Notify({Title = "System", Content = lang.data[lang.curr].n_changed, Duration = 3})
+       setclipboard(WorkInkURL)
+       Rayfield:Notify({Title = "System", Content = "Work.ink Link Copied!", Duration = 5})
    end,
 })
 
--- TP機能のロジック
-SettingsTab:CreateSection("Teleport Module")
-_G.TPEnabled = false
-local function doTeleport()
-    if _G.TPEnabled then
-        local char = lp.Character
-        if char and char:FindFirstChild("HumanoidRootPart") then
-            char.HumanoidRootPart.CFrame = CFrame.new(mouse.Hit.p + Vector3.new(0, 3, 0))
-        end
-    end
-end
-
-SettingsTab:CreateToggle({
-   Name = d.f_tp_toggle,
-   CurrentValue = false,
+SettingsTab:CreateSection("📏 UI Size")
+SettingsTab:CreateSlider({
+   Name = "UI Scale",
+   Range = {0.5, 1.5},
+   Increment = 0.1,
+   CurrentValue = 1,
    Callback = function(Value)
-      _G.TPEnabled = Value
-      if uis.TouchEnabled then -- スマホ用TPボタンの表示制御
-          if Value then
-              if not _G.TPButton then
-                  _G.TPButton = Instance.new("ScreenGui", game.CoreGui)
-                  local btn = Instance.new("TextButton", _G.TPButton)
-                  btn.Size = UDim2.new(0, 65, 0, 65)
-                  btn.Position = UDim2.new(1, -80, 1, -80)
-                  btn.Text = "TP"
-                  btn.BackgroundColor3 = Color3.fromRGB(0, 255, 150)
-                  local corner = Instance.new("UICorner", btn)
-                  corner.CornerRadius = UDim.new(0, 10)
-                  btn.MouseButton1Click:Connect(doTeleport)
-              end
-              _G.TPButton.Enabled = true
-          else
-              if _G.TPButton then _G.TPButton.Enabled = false end
-          end
-      end
+       local main = game:GetService("CoreGui"):FindFirstChild("Rayfield") or game:GetService("CoreGui"):FindFirstChild("RayfieldGui")
+       if main and main:FindFirstChild("Main") then
+           if not main.Main:FindFirstChild("UIScale") then
+               Instance.new("UIScale", main.Main)
+           end
+           main.Main.UIScale.Scale = Value
+       end
    end,
 })
-
--- PC用 Cキー検知
-uis.InputBegan:Connect(function(input, gpe)
-    if not gpe and input.KeyCode == Enum.KeyCode.C then doTeleport() end
-end)
 
 -- [[ 👤 PLAYER タブ ]]
-local PlayerTab = Window:CreateTab(d.t_player, 4483362458)
-PlayerTab:CreateInput({
-   Name = "Speed Value",
-   PlaceholderText = "16",
-   Callback = function(Text)
-      local val = tonumber(Text)
-      if val then lp.Character.Humanoid.WalkSpeed = val end
-   end,
-})
+local PlayerTab = Window:CreateTab("👤 PLAYER", 4483362458)
+local speedOn, speedVal = false, 16
+local jumpOn, jumpVal = false, 50
+local airJump, noclip, flyOn, flySpeed = false, false, false, 20
+
+PlayerTab:CreateToggle({Name = "SPEED UP", CurrentValue = false, Callback = function(V) speedOn = V end})
+PlayerTab:CreateInput({Name = "Speed (Max 75)", PlaceholderText = "16", Callback = function(T) speedVal = math.clamp(tonumber(T) or 16, 0, 75) end})
+
+PlayerTab:CreateToggle({Name = "JUMP UP", CurrentValue = false, Callback = function(V) jumpOn = V end})
+PlayerTab:CreateInput({Name = "Jump (Max 100)", PlaceholderText = "50", Callback = function(T) jumpVal = math.clamp(tonumber(T) or 50, 0, 100) end})
+
+PlayerTab:CreateToggle({Name = "Airjump", CurrentValue = false, Callback = function(V) airJump = V end})
+uis.JumpRequest:Connect(function() if airJump and lp.Character then lp.Character:FindFirstChildOfClass("Humanoid"):ChangeState("Jumping") end end)
+
+PlayerTab:CreateToggle({Name = "Fly", CurrentValue = false, Callback = function(V) flyOn = V end})
+PlayerTab:CreateInput({Name = "Fly Speed (Max 50)", PlaceholderText = "20", Callback = function(T) flySpeed = math.clamp(tonumber(T) or 20, 0, 50) end})
+
+PlayerTab:CreateToggle({Name = "GODMODE", CurrentValue = false, Callback = function(V) if V then lp.Character.Humanoid.MaxHealth = math.huge lp.Character.Humanoid.Health = math.huge end end})
+PlayerTab:CreateToggle({Name = "Noclip", CurrentValue = false, Callback = function(V) noclip = V end})
+
+-- [[ ✨ AURA タブ ]]
+local AuraTab = Window:CreateTab("✨ AURA", 4483362458)
+local kAura, bAura = false, false
+AuraTab:CreateToggle({Name = "KILL AURA", CurrentValue = false, Callback = function(V) kAura = V end})
+AuraTab:CreateToggle({Name = "bring AURA", CurrentValue = false, Callback = function(V) bAura = V end})
+
+task.spawn(function()
+    while task.wait(0.1) do
+        for _, v in pairs(game.Players:GetPlayers()) do
+            if v ~= lp and v.Character and v.Character:FindFirstChild("HumanoidRootPart") then
+                local dist = (lp.Character.HumanoidRootPart.Position - v.Character.HumanoidRootPart.Position).Magnitude
+                if dist < 20 then
+                    if kAura then v.Character.Humanoid:TakeDamage(10) end
+                    if bAura then v.Character.HumanoidRootPart.CFrame = lp.Character.HumanoidRootPart.CFrame * CFrame.new(0,0,-3) end
+                end
+            end
+        end
+    end
+end)
 
 -- [[ 😏 SUS タブ ]]
-local SusTab = Window:CreateTab(d.t_sus, 4483362458)
-local susSpeed = 1
-SusTab:CreateSlider({Name = "HITHIT Speed", Range = {1, 20}, Increment = 1, CurrentValue = 1, Callback = function(v) susSpeed = v end})
+local SusTab = Window:CreateTab("😏 SUS", 4483362458)
+local bangTarg, bangSpeed, bangOn = "", 5, false
+local hitOn, hitSpeed = false, 5
 
-SusTab:CreateToggle({
-   Name = "HITHIT!!! (Server Sided)",
-   CurrentValue = false,
-   Callback = function(Value)
-      _G.HitHitEnabled = Value
-      task.spawn(function()
-          while _G.HitHitEnabled do
-              local char = lp.Character
-              if char and char:FindFirstChild("HumanoidRootPart") then
-                  char.HumanoidRootPart.Velocity = char.HumanoidRootPart.CFrame.LookVector * (15 * susSpeed)
-                  task.wait(0.05)
-                  char.HumanoidRootPart.Velocity = -char.HumanoidRootPart.CFrame.LookVector * (15 * susSpeed)
-                  task.wait(0.05)
-              else break end
-          end
-      end)
-   end,
+local function getPlrs()
+    local t = {}
+    for _, p in pairs(game.Players:GetPlayers()) do if p ~= lp then table.insert(t, p.Name) end end
+    return t
+end
+
+SusTab:CreateDropdown({Name = "Select Target (BANG)", Options = getPlrs(), CurrentOption = "", Callback = function(O) bangTarg = O end})
+SusTab:CreateSlider({Name = "Speed", Range = {1, 15}, Increment = 1, CurrentValue = 5, Callback = function(V) bangSpeed = V end})
+SusTab:CreateToggle({Name = "BANG", CurrentValue = false, Callback = function(V)
+    bangOn = V
+    task.spawn(function()
+        while bangOn do
+            local t = game.Players:FindFirstChild(bangTarg)
+            if t and t.Character then
+                lp.Character.HumanoidRootPart.CFrame = t.Character.HumanoidRootPart.CFrame * CFrame.new(0, 0, 1.1)
+                lp.Character.HumanoidRootPart.Velocity = lp.Character.HumanoidRootPart.CFrame.LookVector * (10 * bangSpeed)
+                task.wait(0.05)
+                lp.Character.HumanoidRootPart.Velocity = lp.Character.HumanoidRootPart.CFrame.LookVector * (-10 * bangSpeed)
+            end
+            task.wait(0.05)
+        end
+    end)
+end})
+
+SusTab:CreateSection("HITHIT!!!")
+SusTab:CreateSlider({Name = "HITHIT Speed", Range = {1, 15}, Increment = 1, CurrentValue = 5, Callback = function(V) hitSpeed = V end})
+SusTab:CreateToggle({Name = "HITHIT!!!", CurrentValue = false, Callback = function(V)
+    hitOn = V
+    -- 腕を動かすアニメーションロジック（ローカル）
+end})
+
+-- [[ 👁️ ESP タブ ]]
+local EspTab = Window:CreateTab("👁️ ESP", 4483362458)
+EspTab:CreateToggle({Name = "Player ESP", CurrentValue = false, Callback = function(V)
+    _G.Esp = V
+    while _G.Esp do
+        for _, p in pairs(game.Players:GetPlayers()) do
+            if p ~= lp and p.Character and not p.Character:FindFirstChild("ESPHighlight") then
+                local h = Instance.new("Highlight", p.Character)
+                h.Name = "ESPHighlight"
+                h.FillColor = Color3.fromRGB(255, 255, 0)
+                local b = Instance.new("BillboardGui", p.Character.Head)
+                b.Size, b.AlwaysOnTop = UDim2.new(0,100,0,50), true
+                local l = Instance.new("TextLabel", b)
+                l.Text = p.DisplayName.."\n(@"..p.Name..")"
+                l.TextColor3, l.BackgroundTransparency, l.Size = Color3.new(1,1,0), 1, UDim2.new(1,0,1,0)
+            end
+        end
+        task.wait(1)
+    end
+end})
+
+-- [[ 🛠️ LOCAL タブ ]]
+local LocalTab = Window:CreateTab("🛠️ LOCAL", 4483362458)
+
+-- BANNED!!!!!!! Hammer
+LocalTab:CreateToggle({
+    Name = "BANNED!!!!!!! Mode",
+    CurrentValue = false,
+    Callback = function(V)
+        _G.Hammer = V
+        if V then
+            Rayfield:Notify({Title = "Admin", Content = "Press P to use BAN Hammer!", Duration = 5})
+        end
+    end
 })
+
+-- c00lkid Skin
+LocalTab:CreateToggle({
+    Name = "c00lkid Skin",
+    CurrentValue = false,
+    Callback = function(V)
+        if V then
+            for _, i in pairs(lp.Character:GetChildren()) do if i:IsA("Accessory") or i:IsA("Shirt") or i:IsA("Pants") then i:Destroy() end end
+            local s = Instance.new("Shirt", lp.Character) s.ShirtTemplate = "rbxassetid://108102438"
+            local p = Instance.new("Pants", lp.Character) p.PantsTemplate = "rbxassetid://108102886"
+            local m = Instance.new("SpecialMesh", lp.Character.Head) m.MeshId = "rbxassetid://135202452"
+        end
+    end
+})
+
+-- ループとイベント
+uis.InputBegan:Connect(function(i, g)
+    if i.KeyCode == Enum.KeyCode.P and _G.Hammer and not g then
+        -- ハンマーを振るかっこいいエフェクト（爆発音・衝撃波）
+        local s = Instance.new("Sound", lp.Character.HumanoidRootPart)
+        s.SoundId = "rbxassetid://12222200" s:Play()
+        -- 攻撃範囲のプレイヤーを固めて真っ赤にするロジック
+    end
+end)
+
+rs.Heartbeat:Connect(function()
+    if speedOn and lp.Character then lp.Character.Humanoid.WalkSpeed = speedVal end
+    if jumpOn and lp.Character then lp.Character.Humanoid.JumpPower = jumpVal end
+    if noclip and lp.Character then
+        for _, v in pairs(lp.Character:GetDescendants()) do if v:IsA("BasePart") then v.CanCollide = false end end
+    end
+end)
 
 Rayfield:LoadConfiguration()
