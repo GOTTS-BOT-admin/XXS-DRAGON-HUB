@@ -1,115 +1,98 @@
-local Success, Fluent = pcall(function()
-    return loadstring(game:HttpGet("https://github.com/dawid-scripts/Fluent/releases/latest/download/main.lua"))()
-end)
+local Fluent = loadstring(game:HttpGet("https://github.com/dawid-scripts/Fluent/releases/latest/download/main.lua"))()
 
-if not Success or not Fluent then return end
+-- [[ ⚙️ CONFIG ]]
+local CORRECT_KEY = "KEY-SHZ7-Ajd1-18Aw-amQv"
+local KEY_LINK = "Https://work.ink/2xWq/xxs-dragon-hub2026no1-key" -- 更新済み
 
 local Window = Fluent:CreateWindow({
-    Title = "XXS-DRAGON-HUB v4.0",
-    SubTitle = "GALAXY EDITION",
+    Title = "XXS-DRGON-HUB_DX",
+    SubTitle = "by GOTTS",
     TabWidth = 160,
     Size = UDim2.fromOffset(580, 460),
-    Acrylic = false,
-    Theme = "Dark",
-    MinimizeKey = Enum.KeyCode.LeftControl
+    Theme = "Dark"
 })
 
--- スマホ用フローティングボタン
-local ScreenGui = Instance.new("ScreenGui", game.CoreGui)
-local OpenBtn = Instance.new("TextButton", ScreenGui)
-OpenBtn.Size = UDim2.new(0, 80, 0, 35)
-OpenBtn.Position = UDim2.new(0, 10, 0.4, 0)
-OpenBtn.Text = "MENU"
-OpenBtn.BackgroundColor3 = Color3.fromRGB(150, 0, 0)
-OpenBtn.TextColor3 = Color3.new(1, 1, 1)
-OpenBtn.Draggable = true
-Instance.new("UICorner", OpenBtn).CornerRadius = UDim.new(0, 8)
-OpenBtn.MouseButton1Click:Connect(function() Window:Minimize() end)
-
--- タブ作成
-local Tabs = {
-    Movement = Window:AddTab({ Title = "Movement", Icon = "run" }),
-    Combat = Window:AddTab({ Title = "Combat", Icon = "sword" }),
-    Visual = Window:AddTab({ Title = "Visual", Icon = "eye" }),
-    Sus = Window:AddTab({ Title = "😏 SUS", Icon = "skull" }),
-    World = Window:AddTab({ Title = "World", Icon = "globe" }),
-    Extra = Window:AddTab({ Title = "Extra", Icon = "plus" })
-}
-
+local KeyTab = Window:AddTab({ Title = "key", Icon = "key" })
 local lp = game.Players.LocalPlayer
 local rs = game:GetService("RunService")
 local uis = game:GetService("UserInputService")
-local WalkSpeed, JumpPower, Target, bS = 16, 50, "", 20
+local Target, WalkSpeed, JumpPower, FlySpeed = "", 16, 50, 50
 
--- [[ 🏃 MOVEMENT ]]
-Tabs.Movement:AddSlider("Spd", { Title = "WalkSpeed", Default = 16, Min = 16, Max = 500, Rounding = 0, Callback = function(v) WalkSpeed = v end })
-local TpWalk = Tabs.Movement:AddToggle("TpW", {Title = "TP Walk", Default = false})
-local FlyToggle = Tabs.Movement:AddToggle("Fly", {Title = "Fly", Default = false})
-local NcToggle = Tabs.Movement:AddToggle("Nc", {Title = "Noclip", Default = false})
-local InfJump = Tabs.Movement:AddToggle("InfJ", {Title = "Infinite Jump", Default = false})
-
--- [[ 💥 COMBAT / BAN ]]
-local HamToggle = Tabs.Combat:AddToggle("Ham", {Title = "BAN HAMMER Mode", Default = false})
-Tabs.Combat:AddButton({ Title = "🔨 SWING HAMMER", Callback = function() if HamToggle.Value then HammerAttack() end end })
-
-function HammerAttack()
-    local root = lp.Character.HumanoidRootPart
-    local s = Instance.new("Sound", root); s.SoundId = "rbxassetid://12222200"; s.Volume = 10; s.PlaybackSpeed = 0.35; s:Play()
-    for i=1,5 do
-        local b = Instance.new("Part", workspace); b.Shape = "Ball"; b.Size = Vector3.new(5,5,5); b.CFrame = root.CFrame; b.Anchored = true; b.CanCollide = false; b.Color = Color3.new(1,0,0); b.Material = "Neon"
-        task.spawn(function() for x=1,20 do b.Size = b.Size + Vector3.new(15,15,15); b.Transparency = x/20; task.wait(0.01) end b:Destroy() end)
+-- [[ 🗝️ KEY SYSTEM (図 1000008812 再現) ]]
+local KeyInput = KeyTab:AddInput("KeyIn", {Title = "key", Placeholder = "Enter Key..."})
+KeyTab:AddButton({Title = "Get Key", Callback = function() setclipboard(KEY_LINK); Fluent:Notify({Title="System", Content="リンクをコピーしました"}) end})
+KeyTab:AddButton({Title = "Let's go!", Callback = function()
+    if KeyInput.Value == CORRECT_KEY then
+        KeyTab:Destroy()
+        LoadMainHub()
+    else
+        Fluent:Notify({Title = "Error", Content = "キーが違います", Duration = 3})
     end
-    for _, v in pairs(game.Players:GetPlayers()) do
-        if v ~= lp and v.Character and v.Character:FindFirstChild("HumanoidRootPart") then
-            if (root.Position - v.Character.HumanoidRootPart.Position).Magnitude < 50 then
-                local g = Instance.new("BillboardGui", v.Character.Head); g.Size = UDim2.new(0,400,0,200); g.AlwaysOnTop = true
-                local t1 = Instance.new("TextLabel", g); t1.Size = UDim2.new(1,0,0.5,0); t1.Text = "HITHIT!!!"; t1.TextColor3 = Color3.new(1,1,1); t1.TextSize = 80; t1.BackgroundTransparency = 1
-                local t2 = Instance.new("TextLabel", g); t2.Position = UDim2.new(0,0,0.5,0); t2.Size = UDim2.new(1,0,0.5,0); t2.Text = "BANNED!!!"; t2.TextColor3 = Color3.new(1,0,0); t2.TextSize = 100; t2.BackgroundTransparency = 1
-                game.Debris:AddItem(g, 2)
+end})
+KeyTab:AddParagraph({Title = "", Content = "                                                                        BY GOTTS"})
+
+-- [[ 🐉 MAIN HUB FUNCTIONS ]]
+function LoadMainHub()
+    local Tabs = {
+        Lang = Window:AddTab({ Title = "English/Japanese", Icon = "languages" }),
+        Player = Window:AddTab({ Title = "Player", Icon = "user" }),
+        Wow = Window:AddTab({ Title = "WOW", Icon = "skull" })
+    }
+
+    -- Language (図 1000008813)
+    Tabs.Lang:AddButton({Title = "English ✔️", Callback = function() end})
+    Tabs.Lang:AddButton({Title = "Japanese ◯", Callback = function() end})
+
+    -- Player (図 1000008814)
+    Tabs.Player:AddSlider("Spd", {Title = "Speed", Default = 16, Min = 16, Max = 500, Callback = function(v) WalkSpeed = v end})
+    Tabs.Player:AddSlider("Jmp", {Title = "JUMP", Default = 50, Min = 50, Max = 500, Callback = function(v) JumpPower = v end})
+    local FlyT = Tabs.Player:AddToggle("Fly", {Title = "fly", Default = false})
+    Tabs.Player:AddSlider("FlSp", {Title = "fly speed", Default = 50, Min = 1, Max = 500, Callback = function(v) FlySpeed = v end})
+    local AirJ = Tabs.Player:AddToggle("AirJ", {Title = "airjump", Default = false})
+    local Noc = Tabs.Player:AddToggle("Noc", {Title = "Noclip", Default = false})
+
+    -- WOW (図 1000008815 + 腰曲げ90度パンパン)
+    local Bang = Tabs.Wow:AddToggle("Bang", {Title = "BANG", Default = false})
+    local Voice = Tabs.Wow:AddToggle("Voice", {Title = "AHH!!! Voice text", Default = false})
+    local Dropdown = Tabs.Wow:AddDropdown("Plr", { Title = "Select Target", Values = {}, Callback = function(v) Target = v end })
+    Tabs.Wow:AddButton({Title = "Refresh Players", Callback = function()
+        local t = {}; for _, v in pairs(game.Players:GetPlayers()) do if v ~= lp then table.insert(t, v.Name) end end; Dropdown:SetValues(t)
+    end})
+
+    -- 物理ループ
+    rs.RenderStepped:Connect(function()
+        local char = lp.Character
+        if not char or not char:FindFirstChild("HumanoidRootPart") then return end
+        char.Humanoid.WalkSpeed = WalkSpeed
+        char.Humanoid.JumpPower = JumpPower
+
+        if Noc.Value then for _,v in pairs(char:GetDescendants()) do if v:IsA("BasePart") then v.CanCollide = false end end end
+        if FlyT.Value then char.HumanoidRootPart.Velocity = workspace.CurrentCamera.CFrame.LookVector * FlySpeed + Vector3.new(0,2,0) end
+
+        if Bang.Value and Target ~= "" then
+            local tPlr = game.Players:FindFirstChild(Target)
+            if tPlr and tPlr.Character and tPlr.Character:FindFirstChild("HumanoidRootPart") then
+                local tRoot = tPlr.Character.HumanoidRootPart
+                local joint = tPlr.Character:FindFirstChild("LowerTorso") and tPlr.Character.LowerTorso:FindFirstChild("Root")
+                -- 腰を90度曲げる
+                if joint then joint.C1 = CFrame.new(0, -1, 0) * CFrame.Angles(math.rad(90), 0, 0) end
+                -- パンパン往復運動
+                char.HumanoidRootPart.CFrame = tRoot.CFrame * CFrame.new(0, -0.5, 1.2 + math.sin(tick() * 25) * 0.8)
+                
+                -- AHH!!! テキスト表示
+                if Voice.Value and tPlr.Character:FindFirstChild("Head") then
+                    local h = tPlr.Character.Head
+                    local g = h:FindFirstChild("SusG") or Instance.new("BillboardGui", h)
+                    g.Name = "SusG"; g.Size = UDim2.new(0,200,0,50); g.AlwaysOnTop = true; g.ExtentsOffset = Vector3.new(0,3,0)
+                    local l = g:FindFirstChild("L") or Instance.new("TextLabel", g)
+                    l.Name = "L"; l.Size = UDim2.new(1,0,1,0); l.BackgroundTransparency = 1; l.Text = "Ahh.... nnn.... more! More!!"; l.TextColor3 = Color3.new(1,0,0); l.TextSize = 18
+                end
             end
         end
-    end
+    end)
+
+    uis.JumpRequest:Connect(function() if AirJ.Value then lp.Character.Humanoid:ChangeState("Jumping") end end)
+    Window:SelectTab(2)
 end
-
--- [[ 😏 SUS ]]
-local BangToggle = Tabs.Sus:AddToggle("Bang", {Title = "BANG", Default = false})
-local Dropdown = Tabs.Sus:AddDropdown("Plr", { Title = "Select Target", Values = {}, Callback = function(v) Target = v end })
-Tabs.Sus:AddButton({Title = "🔄 Refresh", Callback = function() 
-    local t={}; for _,v in pairs(game.Players:GetPlayers()) do if v~=lp then table.insert(t,v.Name) end end; Dropdown:SetValues(t) 
-end})
-
--- [[ 🔄 物理ループ（ここが重要！） ]]
-rs.RenderStepped:Connect(function()
-    local char = lp.Character
-    if not char or not char:FindFirstChild("HumanoidRootPart") then return end
-
-    -- Speed / TP Walk
-    if TpWalk.Value and char.Humanoid.MoveDirection.Magnitude > 0 then
-        char.HumanoidRootPart.CFrame = char.HumanoidRootPart.CFrame + (char.Humanoid.MoveDirection * (WalkSpeed / 45))
-    else
-        char.Humanoid.WalkSpeed = WalkSpeed
-    end
-
-    -- Noclip
-    if NcToggle.Value then
-        for _, v in pairs(char:GetDescendants()) do if v:IsA("BasePart") then v.CanCollide = false end end
-    end
-
-    -- Fly
-    if FlyToggle.Value then
-        char.HumanoidRootPart.Velocity = (workspace.CurrentCamera.CFrame.LookVector * WalkSpeed * 1.3) + Vector3.new(0, 2, 0)
-    end
-
-    -- BANG
-    if BangToggle.Value and Target ~= "" and game.Players:FindFirstChild(Target) then
-        local tChar = game.Players[Target].Character
-        if tChar and tChar:FindFirstChild("HumanoidRootPart") then
-            char.HumanoidRootPart.CFrame = tChar.HumanoidRootPart.CFrame * CFrame.new(0, 0, 1.1 + math.sin(tick() * bS) * 1.0)
-        end
-    end
-end)
-
--- 無限ジャンプ
-uis.JumpRequest:Connect(function() if InfJump.Value then lp.Character:FindFirstChildOfClass("Humanoid"):ChangeState("Jumping") end end)
 
 Window:SelectTab(1)
